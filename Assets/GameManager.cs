@@ -11,13 +11,13 @@ public class GameManager : MonoBehaviour
     }
 
     public GameObject[] enemies;
-    public Transform[] spawnPoints; //위에서 아래로 내려오는 위치 
-    public EnemySpawner[]  spawners;    //사이드 위치 
+    public Transform[] spawnPoints;
+    public EnemySpawner[] spawners;
     public SpawnMode spawnMode = SpawnMode.Mixed;
     public bool prioritizeTopSpawnInMixed = true;
 
     private float delta = 0;
-    private int span = 0; 
+    private int span = 0;
 
     void Start()
     {
@@ -28,14 +28,13 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         delta += Time.deltaTime;
-        
+
         if (delta > span)
         {
-            //만들어라 
             CreateEnemy();
             delta = 0;
-        
-            span = Random.Range(1, 4);  //1, 2, 3
+
+            span = Random.Range(1, 4);
         }
     }
 
@@ -73,12 +72,10 @@ public class GameManager : MonoBehaviour
                 dice = canTop ? 0 : 1;
             }
         }
-        //만약에 0 이라면 위에서 아래로 내려오는거고 
-        //1 이라면 사이드 위치를 잡아야 함 
 
         GameObject enemyGo = Instantiate(prefab);
         var enemy = enemyGo.GetComponent<Enemy>();
-        
+
         if (dice == 0)
         {
             enemyGo.transform.position = topPoint.position;
