@@ -14,7 +14,6 @@ public class GameManager : MonoBehaviour
     public Transform[] spawnPoints;
     public EnemySpawner[] spawners;
     public SpawnMode spawnMode = SpawnMode.Mixed;
-    public bool prioritizeTopSpawnInMixed = true;
 
     private float delta = 0;
     private int span = 0;
@@ -65,7 +64,7 @@ public class GameManager : MonoBehaviour
         {
             if (canTop && canSide)
             {
-                dice = prioritizeTopSpawnInMixed ? 0 : Random.Range(0, 2);
+                dice = Random.Range(0, 2);
             }
             else
             {
@@ -87,7 +86,7 @@ public class GameManager : MonoBehaviour
             Vector3 sideDir = sideSpawner.GetDir().normalized;
             if (enemy != null) enemy.StartMove(sideDir);
         }
-    }
+       }
 
     private Transform GetRandomTopSpawnPoint()
     {

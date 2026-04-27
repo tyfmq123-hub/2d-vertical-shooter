@@ -12,8 +12,14 @@ public class Player : MonoBehaviour
     private float nextFireTime = 0f;
     public int power = 1;
     public int hp = 100;
+    public int coinCount;
     public Test uiManager;
     public float respawnDelay = 1.5f;
+    public GameObject boomEffectPrefab;
+    public float boomEffectDuration = 2f;
+    
+    public int bombCount = 0;
+    public int maxBomb = 3;
 
     private float _fireTimer;
 
@@ -22,12 +28,17 @@ public class Player : MonoBehaviour
     private SpriteRenderer _spriteRenderer;
     private Collider2D _playerCollider;
     private bool _isRespawning;
+    private bool _isBombActive;
 
     void Start()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _playerCollider = GetComponent<Collider2D>();
         _spawnPosition = transform.position;
+        if (uiManager == null)
+        {
+            uiManager = FindFirstObjectByType<Test>();
+        }
 
         if (_spriteRenderer != null)
             _spriteExtents = _spriteRenderer.bounds.extents;
@@ -50,9 +61,21 @@ public class Player : MonoBehaviour
                 nextFireTime = Time.time + fireRate;
             }
         }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            UseBomb();
+        }
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Item3 item = other.GetComponent<Item3>();
+        if (item != null)
+        {
+            CollectItem(item);
+            return;
+        }
+
         if (_isRespawning || !other.CompareTag("EnemyBullet"))
         {
             return;
@@ -85,6 +108,28 @@ public class Player : MonoBehaviour
         }
 
         StartCoroutine(RespawnCoroutine());
+    }
+
+    private void CollectItem(Item3 item)
+    {
+        switch (item.itemType)
+        {
+            case Item3.ItemType.Coin:
+                coinCount++;
+                if (uiManager != null)
+                {
+                    uiManager.AddScore(200);
+                }
+                break;
+            case Item3.ItemType.Boom:
+                AddBomb(1);
+                break;
+            case Item3.ItemType.Power:
+                power = Mathf.Clamp(power + 1, 1, 3);
+                break;
+        }
+
+        Destroy(item.gameObject);
     }
 
     private void Move()
@@ -154,4 +199,68 @@ public class Player : MonoBehaviour
             _playerCollider.enabled = isVisible;
         }
     }
+
+    public void AddBomb(int amount)
+    {
+        bombCount += amount;
+        bombCount = Mathf.Clamp(bombCount, 0, maxBomb);
+    }
+
+    private void UseBomb()
+    {
+        if (_isBombActive || bombCount <= 0)
+        {
+            return;
+        }
+
+        bombCount--;
+        StartCoroutine(BoomSkillCoroutine());
+    }
+
+    private IEnumerator BoomSkillCoroutine()
+    {
+        _isBombActive = true;
+
+        // 폭탄 발동 "처음 1회"에만 전체 적/적탄 제거.
+        Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            if (enemies[i] != null)
+            {
+                enemies[i].KillByBomb();
+            }
+        }
+
+        EnemyBullet[] enemyBullets = FindObjectsByType<EnemyBullet>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemyBullets.Length; i++)
+        {
+            if (enemyBullets[i] != null)
+            {
+                Destroy(enemyBullets[i].gameObject);
+            }
+        }
+
+        if (boomEffectPrefab != null)
+        {
+            Vector3 spawnPos = Vector3.zero;
+            if (Camera.main != null)
+            {
+                spawnPos = Camera.main.transform.position;
+            }
+            spawnPos.z = 0f;
+
+            GameObject fx = Instantiate(boomEffectPrefab, spawnPos, Quaternion.identity);
+            SpriteRenderer[] renderers = fx.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                renderers[i].sortingOrder = Mathf.Max(renderers[i].sortingOrder, 200);
+            }
+
+            Destroy(fx, boomEffectDuration);
+        }
+
+        yield return new WaitForSeconds(boomEffectDuration);
+        _isBombActive = false;
+    }
+
 }

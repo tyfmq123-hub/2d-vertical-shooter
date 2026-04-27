@@ -20,6 +20,12 @@ public class Test : MonoBehaviour
             gameOverpanel.SetActive(false);
         }
 
+        if (restartButton != null)
+        {
+            restartButton.onClick.RemoveListener(RestartGame);
+            restartButton.onClick.AddListener(RestartGame);
+        }
+
         UpdateScoreText();
     }
 
@@ -83,6 +89,11 @@ public class Test : MonoBehaviour
         {
             gameOverpanel.SetActive(true);
         }
+    }
+
+    void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void AddScore(int amount)

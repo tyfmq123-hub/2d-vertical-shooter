@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
     private float fireDelay = 1.5f;
     private float timer = 0f;
     private Vector3 moveDirection = Vector3.down;
+    private bool isDead;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -32,6 +33,19 @@ public class Enemy : MonoBehaviour
         if (gameObject.name.StartsWith("Enemy A") || gameObject.name.StartsWith("Enemy B"))
         {
             canShoot = false;
+        }
+
+        if (gameObject.name.StartsWith("Enemy A"))
+        {
+            speed = 2.6f;
+        }
+        else if (gameObject.name.StartsWith("Enemy B"))
+        {
+            speed = 3.2f;
+        }
+        else if (gameObject.name.StartsWith("Enemy C"))
+        {
+            speed = 1.5f;
         }
     }
 
@@ -101,15 +115,47 @@ public class Enemy : MonoBehaviour
 
     private void Hit(int damage)
     {
+        if (isDead)
+        {
+            return;
+        }
+
         health -= damage;
         sr.sprite = sprites[1];
         Invoke("ReturnDefaultSprite", 0.1f);
 
         if (health <= 0)
         {
-            AddKillScore();
-            Destroy(gameObject);
+            Die(shouldDropItem: true);
         }
+    }
+
+    public void KillByBomb()
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+        Die(shouldDropItem: false);
+    }
+
+    private void Die(bool shouldDropItem)
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+        isDead = true;
+        AddKillScore();
+
+        if (shouldDropItem && ItemManager.Instance != null)
+        {
+            ItemManager.Instance.TrySpawnItem(transform.position);
+        }
+
+        Destroy(gameObject);
     }
 
     private void AddKillScore()

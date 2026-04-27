@@ -11,6 +11,22 @@ public class Item3 : MonoBehaviour
     public ItemType itemType;
 
     public float speed = 2f;
+    private Coroutine moveRoutine;
+
+    private void Start()
+    {
+        BeginMove();
+    }
+
+    public void BeginMove()
+    {
+        if (moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+        }
+
+        moveRoutine = StartCoroutine(Move());
+    }
 
     public IEnumerator Move()
     {

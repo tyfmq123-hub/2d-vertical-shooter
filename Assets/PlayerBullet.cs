@@ -18,15 +18,25 @@ public class PlayerBullet : MonoBehaviour
 
         DestroyIfOutOfScreen();
     }
-     private void DestroyIfOutOfScreen()
+
+    private void DestroyIfOutOfScreen()
     {
-        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        if (Camera.main != null)
+        {
+            Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
 
-        bool isOutOfScreen = viewportPos.x < 0f || viewportPos.x > 1f ||
-                             viewportPos.y < 0f || viewportPos.y > 1f;
+            bool isOutOfScreen = viewportPos.x < -0.1f || viewportPos.x > 1.1f ||
+                                 viewportPos.y < -0.1f || viewportPos.y > 1.1f;
 
-        if (isOutOfScreen)
+            if (isOutOfScreen)
+            {
+                Destroy(gameObject);
+            }
+        }
+        else if (transform.position.y > 6f || transform.position.y < -6f)
+        {
             Destroy(gameObject);
+        }
     }
 }
 
